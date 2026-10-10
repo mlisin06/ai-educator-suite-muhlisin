@@ -265,8 +265,9 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Model Gemini</label>
                 <select id="selectModel" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
-                    <option value="gemini-1.5-flash" selected>gemini-1.5-flash (Stabil & Standar)</option>
-                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    <option value="gemini-3.8-flash" selected>gemini-3.8-flash (Rekomendasi Google)</option>
+                    <option value="gemini-2.5-flash">gemini-2.5-flash (Model Terbaru)</option>
+                    <option value="gemini-1.5-flash">gemini-1.5-flash (Stabil)</option>
                 </select>
             </div>
             <div class="flex justify-end space-x-2 pt-2">
@@ -307,7 +308,7 @@
         // Modal API
         function openApiModal() {
             document.getElementById('inputApiKey').value = localStorage.getItem('gemini_api_key') || '';
-            document.getElementById('selectModel').value = localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
+            document.getElementById('selectModel').value = localStorage.getItem('gemini_model') || 'gemini-3.8-flash';
             document.getElementById('apiModal').classList.remove('hidden');
         }
         function closeApiModal() {
@@ -376,16 +377,16 @@
             }
         }
 
-        // Call Gemini API (Sistem Cerdas: Auto Try Beberapa Model Cadangan Sekaligus)
+        // Call Gemini API (Sistem Cerdas: Auto Try Beberapa Model Aktif Sekaligus)
         async function callGemini(promptText) {
             const apiKey = localStorage.getItem('gemini_api_key');
             if (!apiKey) {
                 return "<strong>[Mode Simulasi - API Key Belum Diisi]</strong><br><br>1. Soal Contoh Pilihan Ganda A/B/C/D.<br>2. Soal Contoh Kedua.<br><em>Silakan masukkan API Key di menu kiri atas untuk hasil otomatis AI Gemini real-time.</em>";
             }
 
-            // Daftar urutan model yang akan diuji otomatis jika salah satu tertolak
-            const chosenModel = localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
-            const modelsToTry = [chosenModel, 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash'];
+            // Urutan model aktif yang akan dicoba (diutamakan gemini-3.8-flash & gemini-2.5-flash)
+            const chosenModel = localStorage.getItem('gemini_model') || 'gemini-3.8-flash';
+            const modelsToTry = [chosenModel, 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-1.5-flash'];
             const uniqueModels = [...new Set(modelsToTry)];
 
             let lastErrorMessage = "";
