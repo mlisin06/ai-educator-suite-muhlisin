@@ -71,7 +71,7 @@
         <!-- TAB 1: FOTO / PDF TO SOAL -->
         <section id="tab-soal" class="tab-content">
             <header class="mb-6">
-                <h2 class="text-2xl font-bold text-slate-800">Pembuat Paket Soal AI (PDF / Foto Mater)</h2>
+                <h2 class="text-2xl font-bold text-slate-800">Pembuat Paket Soal AI (PDF / Foto Materi)</h2>
                 <p class="text-sm text-slate-500">Unggah file PDF buku paket atau foto lembar materi untuk dijadikan paket soal lengkap otomatis.</p>
             </header>
 
@@ -265,7 +265,8 @@
             <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Model Gemini</label>
                 <select id="selectModel" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
-                    <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Cepat & Direkomendasikan)</option>
+                    <option value="gemini-1.5-flash" selected>gemini-1.5-flash (Stabil & Direkomendasikan)</option>
+                    <option value="gemini-2.5-flash">gemini-2.5-flash</option>
                 </select>
             </div>
             <div class="flex justify-end space-x-2 pt-2">
@@ -306,6 +307,7 @@
         // Modal API
         function openApiModal() {
             document.getElementById('inputApiKey').value = localStorage.getItem('gemini_api_key') || '';
+            document.getElementById('selectModel').value = localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
             document.getElementById('apiModal').classList.remove('hidden');
         }
         function closeApiModal() {
@@ -313,8 +315,10 @@
         }
         function saveApiKey() {
             const key = document.getElementById('inputApiKey').value.trim();
+            const model = document.getElementById('selectModel').value;
             if(key) {
                 localStorage.setItem('gemini_api_key', key);
+                localStorage.setItem('gemini_model', model);
             } else {
                 localStorage.removeItem('gemini_api_key');
             }
@@ -372,29 +376,40 @@
             }
         }
 
-        // Call Gemini API
+        // Call Gemini API (Disempurnakan agar stabil dan menangani model dinamis)
         async function callGemini(promptText) {
             const apiKey = localStorage.getItem('gemini_api_key');
             if (!apiKey) {
-                // Return Simulation Response
                 return "<strong>[Mode Simulasi - API Key Belum Diisi]</strong><br><br>1. Soal Contoh Pilihan Ganda A/B/C/D.<br>2. Soal Contoh Kedua.<br><em>Silakan masukkan API Key di menu kiri atas untuk hasil otomatis AI Gemini real-time.</em>";
             }
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: promptText }] }],
-                    generationConfig: { maxOutputTokens: 8192 }
-                })
-            });
+            const modelName = localStorage.getItem('gemini_model') || 'gemini-1.5-flash';
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }],
+                        generationConfig: { maxOutputTokens: 8192 }
+                    })
+                });
 
-            const data = await response.json();
-            if(data.candidates && data.candidates[0].content.parts[0].text) {
-                return data.candidates[0].content.parts[0].text;
-            } else {
-                throw new Error("Gagal menerima respon AI.");
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error?.message || `Gagal dari server (Status: ${response.status})`);
+                }
+
+                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Struktur respons dari server Gemini tidak valid.");
+                }
+            } catch (err) {
+                console.error("Gemini API Error:", err);
+                throw new Error(err.message);
             }
         }
 
@@ -556,7 +571,7 @@
         function cetakHasil(elementId) {
             const content = document.getElementById(elementId).innerHTML;
             const win = window.open('', '', 'height=700,width=900');
-            win.document.write('html><head><title>Cetak Dokumen EduSuite</title>');
+            win.document.write('<!DOCTYPE html><html><head><title>Cetak Dokumen EduSuite</title>');
             win.document.write('<script src="https://cdn.tailwindcss.com"><\/script>');
             win.document.write('</head><body class="p-8 prose">');
             win.document.write(content);
