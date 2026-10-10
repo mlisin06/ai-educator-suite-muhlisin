@@ -37,6 +37,10 @@
                         <i class="fa-solid fa-key"></i> Set API
                     </button>
                 </div>
+                <!-- Global Sync Alert Indicator -->
+                <div id="syncIndicator" class="hidden bg-emerald-900/60 text-emerald-200 border border-emerald-500/40 p-2 rounded-lg text-[11px] items-center gap-1.5">
+                    <i class="fa-solid fa-sync fa-spin text-emerald-400"></i> Materi Tersinkron!
+                </div>
             </div>
 
             <!-- Menu Navigation -->
@@ -46,7 +50,7 @@
                     <span>Foto / PDF to Soal</span>
                 </button>
                 <button onclick="switchTab('tab-pembelajaran')" id="btn-tab-pembelajaran" class="nav-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center space-x-3 hover:bg-indigo-800 text-indigo-200">
-                    <i class="fa-solid fa-photo-film w-5 text-indigo-300"></i>
+                    <i class="fa-solid fa-circle-play w-5 text-indigo-300"></i>
                     <span>Generate Pembelajaran AI</span>
                 </button>
                 <button onclick="switchTab('tab-modul')" id="btn-tab-modul" class="nav-btn w-full text-left px-3.5 py-2.5 rounded-lg flex items-center space-x-3 hover:bg-indigo-800 text-indigo-200">
@@ -76,7 +80,7 @@
         <section id="tab-soal" class="tab-content">
             <header class="mb-6">
                 <h2 class="text-2xl font-bold text-slate-800">Pembuat Paket Soal AI (PDF / Foto Materi)</h2>
-                <p class="text-sm text-slate-500">Unggah file PDF buku paket atau foto lembar materi untuk dijadikan paket soal lengkap otomatis.</p>
+                <p class="text-sm text-slate-500">Unggah materi di sini. Data materi akan otomatis tersinkron ke semua modul pembelajaran lainnya.</p>
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -136,28 +140,34 @@
             </div>
         </section>
 
-        <!-- TAB BARU: GENERATE PEMBELAJARAN AI (3 SUB BAR) -->
+        <!-- TAB GENERATE PEMBELAJARAN AI (SLIDE VISUAL & FULL SINKRON) -->
         <section id="tab-pembelajaran" class="tab-content hidden">
             <header class="mb-6">
                 <h2 class="text-2xl font-bold text-slate-800">Generate Pembelajaran Interaktif AI</h2>
-                <p class="text-sm text-slate-500">Unggah materi di tab "Foto/PDF to Soal" terlebih dahulu, lalu hasilkan skenario audio-visual, penjelajahan, dan karakter siswa.</p>
+                <p class="text-sm text-slate-500">Skenario visual, penjelajahan, dan karakter siswa yang otomatis tersinkron dari materi yang Anda unggah.</p>
             </header>
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                <!-- Status Banner Sinkronisasi -->
                 <div class="flex flex-col md:flex-row items-center justify-between bg-indigo-50 p-4 rounded-xl border border-indigo-100 gap-4">
-                    <div>
-                        <h4 class="font-bold text-indigo-900 text-sm"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Pusat Pembuatan Skenario Pembelajaran</h4>
-                        <p class="text-xs text-indigo-700 mt-0.5">Sistem akan menyusun 3 sub-pembelajaran mendalam berdasarkan dokumen yang telah diunggah.</p>
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 bg-indigo-600 text-white rounded-xl">
+                            <i class="fa-solid fa-photo-film text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-indigo-900 text-sm">Pusat Skenario Pembelajaran</h4>
+                            <p id="materiSyncStatus" class="text-xs text-indigo-700 mt-0.5">Materi belum diunggah. Unggah PDF/Foto di Tab 1 terlebih dahulu.</p>
+                        </div>
                     </div>
-                    <button onclick="generateAllPembelajaran()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl text-xs transition shadow-md whitespace-nowrap">
-                        <i class="fa-solid fa-bolt mr-1"></i> Generate Ketiga Sub Pembelajaran
+                    <button onclick="generateAllPembelajaran()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-xl text-xs transition shadow-md whitespace-nowrap flex items-center gap-2">
+                        <i class="fa-solid fa-bolt"></i> Generate Pembelajaran dari Dokumen
                     </button>
                 </div>
 
-                <!-- Sub Bar Navigation Tabs -->
+                <!-- Sub Bar Tabs -->
                 <div class="flex border-b border-slate-200 space-x-2">
                     <button onclick="switchSubBar('sub1')" id="btn-sub1" class="sub-nav-btn px-4 py-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2">
-                        <i class="fa-solid fa-video"></i> 1. Video Pembahasan Materi
+                        <i class="fa-solid fa-tv"></i> 1. Video Pembahasan Materi (Visual Cards)
                     </button>
                     <button onclick="switchSubBar('sub2')" id="btn-sub2" class="sub-nav-btn px-4 py-2 text-xs font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-700 flex items-center gap-2">
                         <i class="fa-solid fa-compass"></i> 2. Pembelajaran Penjelajahan
@@ -167,44 +177,51 @@
                     </button>
                 </div>
 
-                <!-- Sub Bar Content 1: Video Pembahasan -->
+                <!-- Sub Bar Content 1: Video Pembahasan Visual Cards -->
                 <div id="content-sub1" class="sub-content space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold text-slate-600">Storyboard / Skrip Visual untuk Siswa (Dapat diedit langsung di bawah):</span>
-                        <button onclick="toggleEditMode('editSub1', 'textSub1')" id="btnEditSub1" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-medium transition">
-                            <i class="fa-solid fa-pen-to-square mr-1"></i> Mode Edit / Simpan
-                        </button>
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-sliders mr-1 text-indigo-600"></i> Mode Tampilan Presentation Cards</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="playVoiceNarator('viewSub1')" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1">
+                                <i class="fa-solid fa-volume-high"></i> Putar Narasi Suara
+                            </button>
+                            <button onclick="toggleEditMode('editSub1', 'viewSub1')" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
+                                <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Teks
+                            </button>
+                        </div>
                     </div>
-                    <div id="viewSub1" class="prose max-w-none text-xs text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[250px] max-h-[400px] overflow-y-auto">
-                        <p class="text-slate-400 italic text-center py-12">Belum digenerate. Klik tombol "Generate Ketiga Sub Pembelajaran" di atas.</p>
+
+                    <!-- Slide Presentation Container -->
+                    <div id="viewSub1" class="space-y-4 min-h-[250px]">
+                        <p class="text-slate-400 italic text-center py-12">Belum digenerate. Unggah materi di Tab 1 lalu klik "Generate Pembelajaran dari Dokumen".</p>
                     </div>
                     <textarea id="editSub1" class="hidden w-full h-[300px] p-4 text-xs font-mono bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
 
                 <!-- Sub Bar Content 2: Penjelajahan -->
                 <div id="content-sub2" class="sub-content space-y-3 hidden">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold text-slate-600">Panduan Eksperimen / Penemuan Konsep (Dapat diedit langsung di bawah):</span>
-                        <button onclick="toggleEditMode('editSub2', 'textSub2')" id="btnEditSub2" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-medium transition">
-                            <i class="fa-solid fa-pen-to-square mr-1"></i> Mode Edit / Simpan
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i> Aktivitas Penemuan Konsep / Eksperimen Mandiri</span>
+                        <button onclick="toggleEditMode('editSub2', 'viewSub2')" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Teks
                         </button>
                     </div>
-                    <div id="viewSub2" class="prose max-w-none text-xs text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[250px] max-h-[400px] overflow-y-auto">
-                        <p class="text-slate-400 italic text-center py-12">Belum digenerate. Klik tombol "Generate Ketiga Sub Pembelajaran" di atas.</p>
+                    <div id="viewSub2" class="prose max-w-none text-xs text-slate-700 bg-slate-50 p-5 rounded-xl border border-slate-200 min-h-[250px]">
+                        <p class="text-slate-400 italic text-center py-12">Belum digenerate.</p>
                     </div>
                     <textarea id="editSub2" class="hidden w-full h-[300px] p-4 text-xs font-mono bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
 
                 <!-- Sub Bar Content 3: Karakter -->
                 <div id="content-sub3" class="sub-content space-y-3 hidden">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold text-slate-600">Penyisipan Nilai Karakter & Profil Pelajar (Dapat diedit langsung di bawah):</span>
-                        <button onclick="toggleEditMode('editSub3', 'textSub3')" id="btnEditSub3" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg font-medium transition">
-                            <i class="fa-solid fa-pen-to-square mr-1"></i> Mode Edit / Simpan
+                    <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                        <span class="text-xs font-bold text-slate-700"><i class="fa-solid fa-heart mr-1 text-rose-500"></i> Integrasi Profil Pelajar Pancasila & Nilai Karakter</span>
+                        <button onclick="toggleEditMode('editSub3', 'viewSub3')" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> Edit Teks
                         </button>
                     </div>
-                    <div id="viewSub3" class="prose max-w-none text-xs text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-200 min-h-[250px] max-h-[400px] overflow-y-auto">
-                        <p class="text-slate-400 italic text-center py-12">Belum digenerate. Klik tombol "Generate Ketiga Sub Pembelajaran" di atas.</p>
+                    <div id="viewSub3" class="prose max-w-none text-xs text-slate-700 bg-slate-50 p-5 rounded-xl border border-slate-200 min-h-[250px]">
+                        <p class="text-slate-400 italic text-center py-12">Belum digenerate.</p>
                     </div>
                     <textarea id="editSub3" class="hidden w-full h-[300px] p-4 text-xs font-mono bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
@@ -215,7 +232,7 @@
         <section id="tab-modul" class="tab-content hidden">
             <header class="mb-6">
                 <h2 class="text-2xl font-bold text-slate-800">Pembuat Modul Ajar / RPP Lengkap</h2>
-                <p class="text-sm text-slate-500">Susun Modul Ajar Kurikulum Merdeka secara instan sesuai Capaian Pembelajaran (CP).</p>
+                <p class="text-sm text-slate-500">Topik dan materi akan otomatis tersinkron dari dokumen yang telah Anda unggah.</p>
             </header>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -226,11 +243,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">Materi / Topik Pembelajaran</label>
-                        <input type="text" id="modulTopik" placeholder="Contoh: Wujud Zat dan Perubahannya" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
+                        <input type="text" id="modulTopik" placeholder="Otomatis terisi dari dokumen..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm font-medium text-indigo-900 bg-indigo-50/50">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">Alokasi Waktu & Target Profil Pancasila</label>
-                        <input type="text" id="modulWaktu" placeholder="Contoh: 2 JP (2x35 Menit) - Gotong Royong, Bernalar Kritis" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
+                        <input type="text" id="modulWaktu" value="2 JP (2x35 Menit) - Gotong Royong, Bernalar Kritis" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-sm">
                     </div>
                     <button onclick="generateModulAjar()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl shadow-md transition">
                         <i class="fa-solid fa-file-pen mr-2"></i>Buat Modul Ajar Now
@@ -358,7 +375,9 @@
 
     <!-- JavaScript Application Logic -->
     <script>
+        // GLOBAL STATE VARIABLES (Sinkron Seluruh Tab)
         let extractedContentText = "";
+        let currentUploadedFileName = "";
         let dataSiswaList = [
             { nama: "Ahmad Dahlan", nilai: 85 },
             { nama: "Siti Walidah", nilai: 72 }
@@ -370,7 +389,7 @@
             renderTabelSiswa();
         });
 
-        // Navigation
+        // Navigation Switcher
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(el => {
@@ -384,7 +403,7 @@
             }
         }
 
-        // Sub Bar Switcher for Pembelajaran
+        // Sub Bar Switcher
         function switchSubBar(subId) {
             document.querySelectorAll('.sub-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.sub-nav-btn').forEach(el => {
@@ -399,19 +418,17 @@
             }
         }
 
-        // Editable Toggle Function
+        // Toggle Edit Mode
         function toggleEditMode(textareaId, viewDivId) {
             const textarea = document.getElementById(textareaId);
-            const viewDiv = document.getElementById(textareaId.replace('edit', 'view'));
+            const viewDiv = document.getElementById(viewDivId);
             
             if (textarea.classList.contains('hidden')) {
-                // Switch to edit mode
-                textarea.value = viewDiv.innerHTML.replace(/<[^>]*>?/gm, ''); // Extract raw text or innerHTML
+                textarea.value = viewDiv.innerText.trim();
                 textarea.classList.remove('hidden');
                 viewDiv.classList.add('hidden');
             } else {
-                // Switch back to view mode and save edits
-                viewDiv.innerHTML = textarea.value;
+                viewDiv.innerHTML = `<div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-100 text-xs">${textarea.value.replace(/\n/g, '<br>')}</div>`;
                 textarea.classList.add('hidden');
                 viewDiv.classList.remove('hidden');
             }
@@ -450,13 +467,14 @@
             }
         }
 
-        // PDF / Image Handling
+        // PDF / Image Handling & SINKRONISASI MATERI GLOBAL
         async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const statusText = document.getElementById('uploadStatus');
             const pdfInfoBox = document.getElementById('pdfInfoBox');
+            currentUploadedFileName = file.name;
 
             if (file.type === "application/pdf") {
                 statusText.innerText = "Membaca PDF...";
@@ -475,6 +493,10 @@
                     statusText.innerText = "PDF Berhasil Dibaca!";
                     pdfInfoBox.classList.remove('hidden');
                     document.getElementById('pdfInfoText').innerText = `${file.name} (${pdf.numPages} Halaman)`;
+                    
+                    // Trigger Sinkronisasi Seluruh Tab
+                    updateGlobalSyncState();
+
                 } catch (err) {
                     alert("Gagal membaca file PDF: " + err.message);
                 }
@@ -482,18 +504,44 @@
                 statusText.innerText = "Membaca Gambar...";
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    extractedContentText = "Materi Gambar (Terlampir)";
+                    extractedContentText = "Materi Gambar (Terlampir dalam dokumen)";
                     statusText.innerText = "Foto Berhasil Dimuat!";
+                    updateGlobalSyncState();
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        // Call Gemini API
+        // FUNGSI SINKRONISASI SELURUH TAB
+        function updateGlobalSyncState() {
+            // Update Indikator Sidebar
+            const syncBadge = document.getElementById('syncIndicator');
+            if (syncBadge) syncBadge.classList.remove('hidden');
+
+            // Update Tab Pembelajaran AI
+            const statusLabel = document.getElementById('materiSyncStatus');
+            if (statusLabel) {
+                statusLabel.innerHTML = `<span class="font-bold text-emerald-600"><i class="fa-solid fa-check-circle mr-1"></i>Materi Tersinkron:</span> ${currentUploadedFileName}`;
+            }
+
+            // Update Form Modul Ajar (Topik)
+            const modulTopikInput = document.getElementById('modulTopik');
+            if (modulTopikInput) {
+                modulTopikInput.value = currentUploadedFileName.replace(/\.[^/.]+$/, "");
+            }
+
+            // Update Form Rubrik (Judul)
+            const rubrikJudulInput = document.getElementById('rubrikJudul');
+            if (rubrikJudulInput && !rubrikJudulInput.value) {
+                rubrikJudulInput.value = "Tugas/Proyek: " + currentUploadedFileName.replace(/\.[^/.]+$/, "");
+            }
+        }
+
+        // Call Gemini API (Universal Auto-Fallback)
         async function callGemini(promptText) {
             const apiKey = localStorage.getItem('gemini_api_key');
             if (!apiKey) {
-                return "<strong>[Mode Simulasi - API Key Belum Diisi]</strong><br><br>Silakan masukkan API Key di menu kiri atas.";
+                return "<strong>[Mode Simulasi - API Key Belum Diisi]</strong><br><br>1. Soal Contoh Pilihan Ganda A/B/C/D.<br>2. Soal Contoh Kedua.<br><em>Silakan masukkan API Key di menu kiri atas untuk hasil otomatis AI Gemini real-time.</em>";
             }
 
             const chosenModel = localStorage.getItem('gemini_model') || 'gemini-2.5-flash';
@@ -530,10 +578,10 @@
             throw new Error(lastErrorMessage || "Gagal terhubung ke server Gemini.");
         }
 
-        // Generate All 3 Pembelajaran Sub-Bars
+        // GENERATE KETIGA SUB PEMBELAJARAN (SLIDE VISUAL CARDS)
         async function generateAllPembelajaran() {
             if (!extractedContentText) {
-                alert("Silakan unggah file PDF atau foto materi terlebih dahulu di tab 'Foto / PDF to Soal'!");
+                alert("Silakan unggah file PDF atau foto materi terlebih dahulu di Tab 'Foto / PDF to Soal'!");
                 switchTab('tab-soal');
                 return;
             }
@@ -542,35 +590,77 @@
             const view2 = document.getElementById('viewSub2');
             const view3 = document.getElementById('viewSub3');
 
-            view1.innerHTML = `<p class="text-indigo-600 font-medium animate-pulse text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyusun skrip video pembahasan...</p>`;
+            view1.innerHTML = `<p class="text-indigo-600 font-medium animate-pulse text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Merancang Slide Cards Visual...</p>`;
             view2.innerHTML = `<p class="text-indigo-600 font-medium animate-pulse text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyusun skenario penjelajahan...</p>`;
             view3.innerHTML = `<p class="text-indigo-600 font-medium animate-pulse text-center py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyusun nilai karakter & Profil Pancasila...</p>`;
 
             const baseMateri = extractedContentText.substring(0, 3000);
 
-            // 1. Video Pembahasan
+            // 1. Sub Bar 1: Format Presentation Cards
             try {
-                const p1 = `Berdasarkan materi berikut: ${baseMateri}. Buatkan skrip storyboard video pembahasan materi yang menarik, visual, dan mudah dipahami siswa dalam bentuk poin-poin penjelasan interaktif (Format HTML rapi).`;
-                view1.innerHTML = await callGemini(p1);
+                const p1 = `Berdasarkan materi: ${baseMateri}. Buatkan skrip presentasi pembelajaran visual dalam 4 slide kartu interaktif.
+                Gunakan format pemisah tajam tiap slide seperti ini:
+                
+                [SLIDE 1]
+                Judul Slide: ...
+                Poin Visual: ...
+                Narasi Suara: ...
+                
+                [SLIDE 2]
+                Judul Slide: ...
+                Poin Visual: ...
+                Narasi Suara: ...`;
+
+                const res1 = await callGemini(p1);
+                
+                // Parser Menjadi Kartu Visual Berwarna
+                const slides = res1.split(/\[SLIDE \d+\]/i).filter(s => s.trim());
+                let cardHtml = "";
+                slides.forEach((slideText, idx) => {
+                    cardHtml += `
+                        <div class="bg-gradient-to-r from-indigo-900 to-indigo-800 text-white p-5 rounded-2xl shadow-md border border-indigo-700 relative">
+                            <span class="absolute top-3 right-4 bg-indigo-500/30 text-indigo-200 text-[10px] px-2.5 py-1 rounded-full font-mono border border-indigo-400/30">SLIDE ${idx + 1}</span>
+                            <div class="text-xs space-y-2">
+                                ${slideText.replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    `;
+                });
+                view1.innerHTML = cardHtml || `<div class="bg-indigo-50 p-4 rounded-xl text-xs">${res1}</div>`;
             } catch (e) {
                 view1.innerHTML = `<p class="text-red-500">Error: ${e.message}</p>`;
             }
 
-            // 2. Pembelajaran Penjelajahan
+            // 2. Sub Bar 2: Penjelajahan
             try {
-                const p2 = `Berdasarkan materi berikut: ${baseMateri}. Buatkan rancangan Pembelajaran Berbasis Penjelajahan (Exploration-Based Learning) atau eksperimen mandiri yang bisa dilakukan siswa di kelas maupun luar kelas (Format HTML rapi).`;
-                view2.innerHTML = await callGemini(p2);
+                const p2 = `Berdasarkan materi: ${baseMateri}. Buatkan rancangan Pembelajaran Berbasis Penjelajahan (Exploration-Based Learning) atau eksperimen mandiri siswa.`;
+                const res2 = await callGemini(p2);
+                view2.innerHTML = `<div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-800 leading-relaxed">${res2.replace(/\n/g, '<br>')}</div>`;
             } catch (e) {
                 view2.innerHTML = `<p class="text-red-500">Error: ${e.message}</p>`;
             }
 
-            // 3. Pembelajaran Karakter
+            // 3. Sub Bar 3: Karakter
             try {
-                const p3 = `Berdasarkan materi berikut: ${baseMateri}. Buatkan panduan Pembelajaran Berbasis Karakter (integrasi Profil Pelajar Pancasila seperti gotong royong, bernalar kritis, mandiri) yang relevan dengan topik ini (Format HTML rapi).`;
-                view3.innerHTML = await callGemini(p3);
+                const p3 = `Berdasarkan materi: ${baseMateri}. Buatkan panduan Pembelajaran Berbasis Karakter (Profil Pelajar Pancasila) yang relevan.`;
+                const res3 = await callGemini(p3);
+                view3.innerHTML = `<div class="bg-slate-50 p-4 rounded-xl text-xs text-slate-800 leading-relaxed">${res3.replace(/\n/g, '<br>')}</div>`;
             } catch (e) {
                 view3.innerHTML = `<p class="text-red-500">Error: ${e.message}</p>`;
             }
+        }
+
+        // Voice Narator TTS
+        function playVoiceNarator(containerId) {
+            const container = document.getElementById(containerId);
+            const text = container.innerText.trim();
+            if(!text) return;
+
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text.substring(0, 1000));
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
         }
 
         // Generate Soal
@@ -601,21 +691,19 @@
             }
         }
 
-        // Generate Modul Ajar
+        // Generate Modul Ajar (SINKRON MATERI)
         async function generateModulAjar() {
-            const mapel = document.getElementById('modulMapel').value;
-            const topik = document.getElementById('modulTopik').value;
+            const mapel = document.getElementById('modulMapel').value || "Mata Pelajaran";
+            const topik = document.getElementById('modulTopik').value || currentUploadedFileName;
             const waktu = document.getElementById('modulWaktu').value;
             const container = document.getElementById('hasilModulContainer');
 
-            if(!mapel || !topik) {
-                alert("Isi nama mata pelajaran dan topik terlebih dahulu!");
-                return;
-            }
-
             container.innerHTML = `<p class="text-indigo-600 font-medium animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyusun Modul Ajar Kurikulum Merdeka...</p>`;
 
-            const prompt = `Buatkan Modul Ajar Kurikulum Merdeka untuk ${mapel}, Topik: ${topik}, Alokasi Waktu/Target: ${waktu}.
+            const materiContext = extractedContentText ? extractedContentText.substring(0, 3000) : topik;
+
+            const prompt = `Buatkan Modul Ajar Kurikulum Merdeka untuk ${mapel}, Topik: ${topik}, Alokasi Waktu: ${waktu}.
+            Gunakan konteks materi berikut: ${materiContext}.
             Struktur mencakup: Identitas, Tujuan Pembelajaran, Langkah-Langkah Pembelajaran (Pendahuluan, Inti, Penutup), Asesmen, dan Refleksi Guru. Format HTML rapi.`;
 
             try {
@@ -706,13 +794,8 @@
 
         // Generate Rubrik
         async function generateRubrik() {
-            const judul = document.getElementById('rubrikJudul').value;
+            const judul = document.getElementById('rubrikJudul').value || "Tugas/Proyek";
             const container = document.getElementById('hasilRubrikContainer');
-
-            if (!judul) {
-                alert("Isi judul tugas/proyek terlebih dahulu!");
-                return;
-            }
 
             container.innerHTML = `<p class="text-indigo-600 font-medium animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyusun tabel rubrik penilaian...</p>`;
 
